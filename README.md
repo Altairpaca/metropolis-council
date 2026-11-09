@@ -139,6 +139,10 @@ Outputs land in `results/`: `smoke.json` (full episodes), `smoke.csv`, `smoke.md
 
 The ordering is the intended one and it is not a strawman ranking: the rule council grows the most population and never fails; the greedy baseline survives by hoarding cash while shrinking; doing nothing kills the city in five of fifteen runs. Thresholds are **uncalibrated v0.1 constants** published in `SCORE_CONFIG`, not psychometric results.
 
+### A real local model, for contrast
+
+Run against a local Ollama endpoint (qwen3:8b-nothinking), same scenario and seed, 36 months, 6 decisions: it returned six valid proposals with no fallback in 255 s, and scored **71.0** - below the rule council (84.9) and below doing nothing (79.7). It spent money without moving the binding constraint. Full record, including why one episode is not a ranking: [docs/LLM_INTEGRATION.md](docs/LLM_INTEGRATION.md).
+
 See [docs/BENCHMARK.md](docs/BENCHMARK.md) for the full protocol.
 
 ---
@@ -184,7 +188,7 @@ Stated plainly, because a prototype that hides its gaps is worse than one that l
 - No multiplayer, no modding API, no audio.
 - The economy is a coherent simplified model, not a calibrated economic simulation; parameters are self-consistent game units, not real-world data.
 - Traffic is aggregate link loading, not per-vehicle pathfinding.
-- The LLM path is implemented and protocol-tested offline, but **no real model has been benchmarked in this repository yet**. The mock behaviours exist precisely so this is not confused with a real result.
+- The LLM path has been exercised against a **real local model** (qwen3:8b via Ollama) end to end: six schema-valid proposals, zero fallbacks, 255 s total. See [docs/LLM_INTEGRATION.md](docs/LLM_INTEGRATION.md). That is one episode, not a study - the 8B model scored 71.0, below both the rule council (84.9) and no-op (79.7) on that seed.
 - Score thresholds are uncalibrated v0.1 values.
 - The renderer is stylised low-poly procedural geometry, not a photoreal asset pipeline.
 

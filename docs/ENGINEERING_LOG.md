@@ -245,3 +245,49 @@ OpenAI-compatible wire format.
 5. Add unit tests around the engine's invariants (conservation of credits,
    monotonic land version, bounded household sample).
 6. Add a LOD manager and a PBR material pass for the renderer.
+## 2026-11-09 - Phase 6: real local model, and two more visual bugs
+
+### Real LLM episode
+
+Found an Ollama instance already running on the machine with an 8B model loaded.
+Rather than stop at mocks, ran a real episode through the project's own adapter:
+
+    npx tsx tools/llm-episode.ts http://127.0.0.1:11434/v1 qwen3:8b-nothinking starter_town 101 36 6
+
+All six proposals were schema-valid on the first attempt, no fallback, 18,562 in /
+2,973 out tokens, 255 s total. Result: the model scored 71.0 against the rule
+council at 84.9 and no-op at 79.7 on the identical seed. It spent 6,840 more
+credits than doing nothing and gained 110 people.
+
+That is a genuinely useful outcome: the plumbing works end to end AND the harness
+reports an unflattering result instead of a flattering one. Recorded in full in
+docs/LLM_INTEGRATION.md, including the reasons one episode is not a ranking.
+
+### Bug 7 - the sun never reached noon
+
+**Symptom.** A screenshot requested at timeOfDay 0.74 came back looking like
+night.
+
+**Cause.** the sun elevation used sin(t*2pi - pi/2), which peaks at t=0.25 and is
+back to zero by 0.5. The clock and the lighting disagreed about when noon is.
+
+**Fix.** sun elevation is now sin((t - 0.25) * 2pi), so 0.25 is sunrise, 0.50 is
+noon and 0.75 is sunset, which is what the HUD implies.
+
+### Bug 8 - night facades turned into one glowing mass
+
+**Symptom.** At night the whole city became a single cream-coloured blob.
+
+**Cause.** emissive intensity was applied per frame at night*0.85 on a shared
+material, saturating every facade.
+**Fix.** reduced to night^2 * 0.16 and added a cool moonlight fill light so the
+city stays readable without glowing. Also fixed the inverse bug from earlier in
+the day: daytime facades had been washed warm because emissive was being applied
+at noon.
+
+### Overlay readability
+
+The traffic overlay originally recoloured every building, which produced a
+uniform slab of colour that communicated nothing. Roads now carry the congestion
+signal and buildings go neutral, so the overlay reads as a road network condition
+map, which is what a mayor would actually look at.
