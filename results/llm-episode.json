@@ -1,0 +1,63 @@
+{
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "note": "Real local model run; baselines on the identical scenario and seed. Single episode, not a ranking.",
+  "endpoint": "http://127.0.0.1:11434/v1",
+  "model": "qwen3:8b-nothinking",
+  "scenarioId": "starter_town",
+  "seed": 101,
+  "months": 36,
+  "decisionPeriod": 6,
+  "llmMeta": {
+    "callCount": 6,
+    "tokensIn": 18562,
+    "tokensOut": 2973,
+    "costUSD": 0,
+    "latencyMs": 255011,
+    "errors": [],
+    "fallbackUsed": false
+  },
+  "results": [
+    {
+      "agent": "rule_council",
+      "finalPopulation": 1583,
+      "finalTreasury": 23533,
+      "finalDebt": 0,
+      "survivalTicks": 36,
+      "illegalActionRate": 0,
+      "composite": 84.86,
+      "prosperity": 55.64,
+      "finance": 100,
+      "services": 88.12,
+      "status": "running",
+      "elapsedMs": 3893
+    },
+    {
+      "agent": "noop",
+      "finalPopulation": 1155,
+      "finalTreasury": 10252,
+      "finalDebt": 0,
+      "survivalTicks": 36,
+      "illegalActionRate": 0,
+      "composite": 79.71,
+      "prosperity": 45.05,
+      "finance": 83.24,
+      "services": 88.33,
+      "status": "running",
+      "elapsedMs": 3505
+    },
+    {
+      "agent": "llm_qwen3:8b-nothinking",
+      "finalPopulation": 1265,
+      "finalTreasury": 3412,
+      "finalDebt": 0,
+      "survivalTicks": 36,
+      "illegalActionRate": 0,
+      "composite": 71.01,
+      "prosperity": 50.16,
+      "finance": 59.1,
+      "services": 88.33,
+      "status": "running",
+      "elapsedMs": 258641
+    }
+  ]
+}

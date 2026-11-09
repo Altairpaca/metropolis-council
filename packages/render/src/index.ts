@@ -25,7 +25,7 @@ export interface ViewState {
 }
 
 export const DEFAULT_VIEW: ViewState = {
-  mode: 'standard', zoom: 1, rotation: Math.PI * 0.25, panX: 0, panY: 0, timeOfDay: 0.74, showLabels: true,
+  mode: 'standard', zoom: 1, rotation: Math.PI * 0.25, panX: 0, panY: 0, timeOfDay: 0.42, showLabels: true,
 };
 
 export interface RenderStats { drawCalls: number; triangles: number; instanced: number; buildings: number; trees: number; vehicles: number; }
@@ -67,6 +67,7 @@ export class CityRenderer {
   private camera: THREE.PerspectiveCamera;
   private sun: THREE.DirectionalLight;
   private ambient: THREE.HemisphereLight;
+  private moon: THREE.DirectionalLight;
   private terrain: THREE.Mesh | null = null;
   private water: THREE.Mesh | null = null;
   private roadGroup: THREE.Group = new THREE.Group();
@@ -117,6 +118,10 @@ export class CityRenderer {
 
     this.ambient = new THREE.HemisphereLight(0xa8caff, 0x3a4030, 0.95);
     this.scene.add(this.ambient);
+
+    this.moon = new THREE.DirectionalLight(0x9dc4ff, 0);
+    this.moon.position.set(-40, 46, -30);
+    this.scene.add(this.moon);
 
     this.scene.add(this.roadGroup);
     this.scene.add(this.landmarkGroup);
@@ -186,14 +191,23 @@ export class CityRenderer {
     this.scene.add(this.water);
   }
 
-  private buildRoads(state: WorldState) {
+  private buildRoads(state: WorldState, view: ViewState = DEFAULT_VIEW) {
     for (const c of [...this.roadGroup.children]) {
       this.roadGroup.remove(c);
       if (c instanceof THREE.Mesh) { c.geometry.dispose(); (c.material as THREE.Material).dispose(); }
     }
     const { width: W, height: H } = state.map;
     const cx = (W - 1) / 2, cz = (H - 1) / 2;
-    const matStreet = new THREE.MeshStandardMaterial({ color: 0x2b323a, roughness: 0.92 });
+    const traffic = view.mode === 'traffic';
+    const congestion = state.roads.congestion;
+    const streetColor = traffic
+      ? new THREE.Color().setHSL(0.33 * (1 - congestion), 0.85, 0.42)
+      : new THREE.Color(0x2b323a);
+    const matStreet = new THREE.MeshStandardMaterial({
+      color: streetColor, roughness: traffic ? 0.55 : 0.92,
+      emissive: traffic ? streetColor.clone().multiplyScalar(0.45) : new THREE.Color(0x000000),
+      emissiveIntensity: traffic ? 1 : 0,
+    });
     const matBridge = new THREE.MeshStandardMaterial({ color: 0x4a4f57, roughness: 0.7, metalness: 0.25 });
 
     const groundAt = (tx: number, ty: number): number => {
@@ -338,8 +352,13 @@ export class CityRenderer {
 
       color.copy(this.overlayColor(t, state, view));
       if (view.mode === 'standard') {
-        // Density brightens the façade; night adds warm window light.
         color.offsetHSL(0, 0, t.density * 0.05);
+      } else if (view.mode === 'traffic') {
+        // Roads carry the traffic signal; buildings stay neutral so it reads.
+        color.setHex(0x8d9aa6).offsetHSL(0, 0, t.density * 0.05);
+      } else {
+        // Other overlays tint facades by density but keep the hue readable.
+        color.offsetHSL(0, 0, t.density * 0.04);
       }
       this.buildingMesh!.setColorAt(bi, color);
       bi++;
@@ -364,7 +383,7 @@ export class CityRenderer {
       const body = new THREE.Mesh(
         new THREE.CylinderGeometry(1.05, 1.35, height, 8),
         new THREE.MeshStandardMaterial({
-          color: 0xcfe0ee, roughness: 0.55, metalness: 0.05,
+          color: view.mode === 'standard' ? 0xcfe0ee : 0x9aa6b2, roughness: 0.55, metalness: 0.05,
           emissive: 0x2b3d4f, emissiveIntensity: 0.55,
         }),
       );
@@ -412,18 +431,22 @@ export class CityRenderer {
 
   /** Apply the day/night cycle and camera. */
   private updateEnvironment(state: WorldState, view: ViewState) {
+    // Natural mapping: 0.25 = sunrise, 0.50 = noon, 0.75 = sunset, 0.0/1.0 = midnight.
     const t = view.timeOfDay;
-    const sunAngle = t * Math.PI * 2 - Math.PI / 2;
+    const sunAngle = (t - 0.25) * Math.PI * 2;
     const sunHeight = Math.sin(sunAngle);
     const day = Math.max(0, sunHeight);
     this.sun.position.set(Math.cos(sunAngle) * 70, Math.max(6, sunHeight * 90), 32);
-    this.sun.intensity = 0.35 + day * 2.6;
+    this.sun.intensity = 0.22 + day * 2.7;
     this.sun.color.setHSL(0.09, 0.45 - day * 0.25, 0.55 + day * 0.25);
+    // Cool moonlight fill so the city stays readable at night.
+    this.moon.intensity = (1 - day) * 0.55;
+    this.moon.position.set(-Math.cos(sunAngle) * 60, 46, -30);
     this.sun.target.position.set(0, 0, 0);
 
-    this.ambient.intensity = 0.25 + day * 0.75;
-    this.ambient.color.copy(lerpColor(new THREE.Color(0x223355), new THREE.Color(0xbfd8ff), day));
-    this.ambient.groundColor.copy(lerpColor(new THREE.Color(0x0a0e12), new THREE.Color(0x3a3b2c), day));
+    this.ambient.intensity = 0.42 + day * 0.62;
+    this.ambient.color.copy(lerpColor(new THREE.Color(0x3a4d78), new THREE.Color(0xbfd8ff), day));
+    this.ambient.groundColor.copy(lerpColor(new THREE.Color(0x141a20), new THREE.Color(0x3a3b2c), day));
 
     const skyNight = new THREE.Color(0x070c14);
     const skyDawn = new THREE.Color(0x2b3550);
@@ -470,9 +493,10 @@ export class CityRenderer {
     // Window glow at night via emissive intensity on the shared material.
     if (this.buildingMesh) {
       const mat = this.buildingMesh.material as THREE.MeshStandardMaterial;
+      // Window glow must read as scattered lit windows, not a glowing blob.
       const night = Math.max(0, 1 - day * 3.2);
-      mat.emissive = new THREE.Color(0xffc987);
-      mat.emissiveIntensity = night * night * 0.85;
+      mat.emissive = new THREE.Color(0xffb066);
+      mat.emissiveIntensity = night * night * 0.16;
     }
   }
 
@@ -486,7 +510,7 @@ export class CityRenderer {
     if (mapChanged) {
       this.buildTerrain(state);
     }
-    if (mapChanged || this.roadGroup.children.length === 0) this.buildRoads(state);
+    if (mapChanged || this.roadGroup.children.length === 0 || view.mode !== this.lastView.mode) this.buildRoads(state, view);
     if (landmarksChanged || mapChanged) this.buildCity(state, view);
     if (view.mode !== this.lastView.mode || mapChanged) this.buildCity(state, view);
     this.updateVehicles(state, view);
