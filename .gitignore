@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+.env
+.DS_Store
+results/*.tmp
+coverage/
+playwright-report/
+*.log
+!.gitkeep

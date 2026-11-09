@@ -1,0 +1,40 @@
+{
+  "name": "metropolis-council",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Metropolis Council — a deterministic 3D city-governance game and reproducible LLM governance benchmark",
+  "license": "Apache-2.0",
+  "author": "Altair Li <altairpaca@gmail.com>",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.18.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "pnpm typecheck && vite build --config apps/web/vite.config.ts",
+    "dev": "vite --config apps/web/vite.config.ts",
+    "test": "node scripts/run-tests.mjs",
+    "cli": "tsx packages/sim/src/cli.ts",
+    "selfcheck": "tsx packages/sim/src/cli.ts selfcheck",
+    "bench": "tsx packages/sim/src/cli.ts bench --suite smoke --out results/",
+    "start": "tsx packages/sim/src/cli.ts serve --port 4173",
+    "shot": "node scripts/screenshot.mjs"
+  },
+  "dependencies": {
+    "three": "^0.172.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "tsx": "^4.19.2",
+    "vite": "^6.0.7",
+    "@types/node": "^22.10.5",
+    "@types/three": "^0.172.0"
+  }
+}

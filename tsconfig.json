@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@metropolis/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@metropolis/council": [
+        "./packages/council/src/index.ts"
+      ],
+      "@metropolis/bench": [
+        "./packages/bench/src/index.ts"
+      ],
+      "@metropolis/render": [
+        "./packages/render/src/index.ts"
+      ],
+      "@metropolis/sim": [
+        "./packages/sim/src/index.ts"
+      ],
+      "@metropolis/server": [
+        "./packages/server/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "scripts/**/*"
+  ]
+}
