@@ -109,6 +109,8 @@ export interface EconomyState {
   gdp: number; employment: number; jobs: number;
   commercialDemand: number; industrialDemand: number; residentialDemand: number;
   landValue: number; imports: number; exports: number; businesses: number;
+  /** Citizens that existing residential land can house at current density. */
+  housingCapacity: number;
 }
 
 export interface ServiceState {
@@ -195,6 +197,8 @@ export interface WorldState {
   pending: PendingProposal[];
   shockCursor: number;           // index into scenario.initial.shocks already fired
   activeShocks: ActiveShock[];   // timed exogenous effects, expire at 'until'
+  /** Bumped whenever land use or road geometry changes (renderer cache key). */
+  landVersion: number;
 }
 
 export interface ActiveShock { kind: ShockKind; until: number; magnitude: number; region?: string; }
@@ -307,6 +311,14 @@ export interface RawMetrics {
   illegalActionRate: number; buildSpend: number; maintenanceSpend: number;
   survivalTicks: number; finalPopulation: number; finalTreasury: number; finalDebt: number;
   waterReliability: number[]; powerReliability: number[];
+  /** Configured episode length, so a failure can be scored over the full window. */
+  horizonTicks: number;
+  /** 0..1 proxies computed by the runner for dimensions that are not a single series. */
+  equityProxy?: number;
+  resilienceProxy?: number;
+  /** Per-region service coverage sampled at month end (region order fixed). */
+  regionCoverage?: number[][];
+  regionIds?: string[];
 }
 export interface DimensionScores {
   prosperity: number; finance: number; services: number;

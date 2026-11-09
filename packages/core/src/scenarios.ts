@@ -47,7 +47,7 @@ export const SCENARIOS: Record<string, ScenarioConfig> = {
     id: 'declining_finance', title: '衰退财政 / Declining Finance',
     description: 'Starts with heavy debt and deferred maintenance. Shrinking tax base and aging infrastructure.',
     seed: 104, difficulty: 'hard', months: 120,
-    initial: { treasury: 2500, debt: 9000, population: 2400, waterScarcity: 0.2, powerStress: 0.2, riverBlock: false, decay: 0.55, inequality: 0.25,
+    initial: { treasury: 7000, debt: 8000, population: 2400, waterScarcity: 0.2, powerStress: 0.2, riverBlock: false, decay: 0.45, inequality: 0.25,
       shocks: shocks([
         { tick: 18, kind: 'recession', magnitude: 0.5 },
         { tick: 44, kind: 'infra_decay', magnitude: 0.5 },

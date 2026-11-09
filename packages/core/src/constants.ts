@@ -14,15 +14,16 @@ export const PROMPT_VERSION = 'mc-prompt-v1';
 /** One tick = one month. Base unit of currency = "credit" (cr). */
 export const COST = {
   build: {
-    power_plant:     { cost: 2600, upkeep: 95,  capacity: 260 },
-    water_works:     { cost: 2200, upkeep: 80,  capacity: 230 },
-    sewage_plant:    { cost: 1800, upkeep: 65,  capacity: 210 },
-    garbage_facility:{ cost: 1500, upkeep: 55,  capacity: 200 },
-    clinic:          { cost: 1700, upkeep: 70,  capacity: 150 },
-    school:          { cost: 1900, upkeep: 75,  capacity: 170 },
-    fire_station:    { cost: 1400, upkeep: 60,  capacity: 160 },
-    transit_hub:     { cost: 2100, upkeep: 85,  capacity: 240 },
-    park:            { cost: 500,  upkeep: 15,  capacity: 90  },
+    // capacity = citizens served at 100% quality
+    power_plant:     { cost: 2600, upkeep: 95,  capacity: 1200 },
+    water_works:     { cost: 2200, upkeep: 80,  capacity: 1100 },
+    sewage_plant:    { cost: 1800, upkeep: 65,  capacity: 1400 },
+    garbage_facility:{ cost: 1500, upkeep: 55,  capacity: 1500 },
+    clinic:          { cost: 1700, upkeep: 70,  capacity: 900 },
+    school:          { cost: 1900, upkeep: 75,  capacity: 900 },
+    fire_station:    { cost: 1400, upkeep: 60,  capacity: 1200 },
+    transit_hub:     { cost: 2100, upkeep: 85,  capacity: 1000 },
+    park:            { cost: 500,  upkeep: 15,  capacity: 600 },
     road_segment:    { cost: 320,  upkeep: 8,   capacity: 120 },
     bridge:          { cost: 2600, upkeep: 40,  capacity: 90  },
     res_zone:        { cost: 650,  upkeep: 18,  capacity: 60  },
@@ -31,10 +32,15 @@ export const COST = {
     civic_zone:      { cost: 700,  upkeep: 20,  capacity: 40  },
   } as Record<BuildCategory, { cost: number; upkeep: number; capacity: number }>,
 
-  /** Per-capita demand for each utility per month. */
+  /**
+   * Demand units consumed per citizen. With the capacities above this gives a
+   * transparent rule of thumb at full quality:
+   *   1 water works serves ~1,100 people, 1 clinic ~1,800 (0.5 demand each), etc.
+   * Agents can reason about this directly from the published formula.
+   */
   perCapitaDemand: {
-    power: 0.95, water: 1.05, sewage: 0.7, garbage: 0.55,
-    health: 0.4, education: 0.45, fire: 0.3, transit: 0.6,
+    power: 1.0, water: 1.0, sewage: 0.8, garbage: 0.6,
+    health: 0.5, education: 0.5, fire: 0.35, transit: 0.7,
   } as Record<UtilityKey, number>,
 
   taxBase: 0.9,             // credits of tax per income-credit per month (scaled by taxRate)
@@ -52,7 +58,7 @@ export const COST = {
   parkPollutionAbsorb: 0.06,
   indPollutionPerZone: 0.045,
   transitCongestionRelief: 0.07,
-  floodDamage: 1800,
+  floodDamage: 900,
   droughtWaterFactor: 0.55,
   powerOutageFactor: 0.4,
   recessionDemandFactor: 0.65,

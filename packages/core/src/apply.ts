@@ -78,6 +78,7 @@ function applyOne(state: WorldState, a: Action, cmd: Command) {
       }
       // Roads also seed a connected starter grid around spawn on first build
       if (state.roads.edges.length <= 2) seedStarterRoads(state);
+      state.landVersion += 1;
       break;
     }
     case 'borrow': {
