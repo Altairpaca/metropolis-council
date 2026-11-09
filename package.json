@@ -15,6 +15,7 @@
       "esbuild"
     ]
   },
+  "comment:pnpm": "allowBuilds (pnpm >= 12, in pnpm-workspace.yaml) and onlyBuiltDependencies (pnpm 10-11) both approve esbuild's postinstall.",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "pnpm typecheck && vite build --config apps/web/vite.config.ts",

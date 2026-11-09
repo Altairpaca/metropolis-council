@@ -1,3 +1,9 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+
+# pnpm >= 12 moved build-script approval to `allowBuilds` (mapping form).
+# esbuild ships a native binary whose postinstall is expected, so approve it
+# explicitly rather than making every contributor run `pnpm approve-builds`.
+allowBuilds:
+  esbuild: true
